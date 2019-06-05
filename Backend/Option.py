@@ -13,7 +13,7 @@ class Option:
     # sigma 适用的波动率
     # dv 股利信息（本例中使用连续股利率dv）
     # d1 和 d2 是 BSM 定价过程中需要用到的参数
-    def __init__(self, european, kind, s0, k, t, r, sigma, dv=0):
+    def __init__(self, european, kind, s0, k, t, r, sigma, dv):
         self.european = european
         self.kind = kind
         self.s0 = s0
@@ -21,7 +21,7 @@ class Option:
         self.t = t
         self.sigma = sigma
         self.r = np.log(1 + r)
-        self.dv = dv
+        self.dv = np.log(1 + dv)
         # 计算二叉树需要的
         self.tree = None
         self.delta = None
@@ -42,7 +42,7 @@ class Option:
             return "美式期权不适合这种计算方法"
 
     # 蒙特卡罗定价
-    def mcprice(self, iteration=1000000):
+    def mcprice(self, iteration):
         if self.european:
             zt = np.random.normal(0, 1, iteration)
             st = self.s0 * np.exp((self.r - self.dv - .5 * self.sigma ** 2) * self.t + self.sigma * self.t ** .5 * zt)
@@ -54,7 +54,7 @@ class Option:
             return "美式期权不适合这种计算方法"
 
     # 二叉数定价
-    def bt(self, iteration=500):
+    def bt(self, iteration):
         if iteration % 2 != 0:
             iteration += 1
         self.delta = self.t / iteration

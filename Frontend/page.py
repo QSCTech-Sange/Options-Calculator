@@ -36,6 +36,8 @@ class page:
         self.bsprice = None
         self.mcprice = None
         self.btprice = None
+        self.mc = None
+        self.bt = None
 
     def show(self, mw):
         mw.page_quit.widget.hide()
@@ -65,13 +67,15 @@ class page:
             t0 = self.date_edit_t0.date()
             t = t0.daysTo(t1) / 365
             dv = float(self.dv.text())/100
+            mcstep = int(self.mc.text())
+            btstep = int(self.bt.text())
             option = Option(european, kind, s0, k, t, r, sigma, dv)
             self.bsprice = option.bsprice()
             QMessageBox.about(self.widget,
                               "提示",
                               "正在计算期权价格......\n请耐心等待！")
-            self.mcprice = option.mcprice()
-            self.btprice = option.bt()
+            self.mcprice = option.mcprice(mcstep)
+            self.btprice = option.bt(btstep)
             self.mw.page_result.line_bs.setText(str(self.bsprice))
             self.mw.page_result.line_mc.setText(str(self.mcprice))
             self.mw.page_result.line_bt.setText(str(self.btprice))
