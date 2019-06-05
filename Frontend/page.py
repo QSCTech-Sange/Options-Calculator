@@ -1,4 +1,6 @@
 # 存放按下每个功能键的主页面
+import sys
+sys.path.append("..")
 from PyQt5.QtWidgets import (QWidget, QMessageBox, QGridLayout)
 from PyQt5.QtGui import QFont
 from Backend.Option import Option
