@@ -1,0 +1,33 @@
+QWidget#main{
+        border-image:url(img/background.png)
+}
+
+
+QPushButton#left:hover{color:red}
+QPushButton#left{padding:8px 16px}
+QPushButton#left{border:20px}
+QPushButton#left{
+        font-size:18px;
+        font-weight:200;
+        border-left: 6px solid #ccc!important;
+        border-color: grey;
+    }
+
+QTextEdit{
+        margin:10px 10px
+}
+
+QMessageBox{
+        font-size:15px
+}
+
+QLineEdit{
+    font-size:15px;
+}
+
+QComboBox{
+    font-size:15px
+}
+QDateTimeEdit{
+    font-size:15px
+}
