@@ -31,7 +31,7 @@ class Option:
 
     # B-S-M 计算价格方法
     def bsprice(self):
-        if self.european:
+        if self.european or  self.kind == 1:
             d_1 = (np.log(self.s0 / self.k) + (
                     self.r - self.dv + .5 * self.sigma ** 2) * self.t) / self.sigma / np.sqrt(
                 self.t)
@@ -39,11 +39,11 @@ class Option:
             return self.kind * self.s0 * np.exp(-self.dv * self.t) * sps.norm.cdf(
                 self.kind * d_1) - self.kind * self.k * np.exp(-self.r * self.t) * sps.norm.cdf(self.kind * d_2)
         else:
-            return "美式期权不适合这种计算方法"
+            return "美式看跌期权不适合这种计算方法"
 
     # 蒙特卡罗定价
     def mcprice(self, iteration):
-        if self.european:
+        if self.european or  self.kind == 1:
             zt = np.random.normal(0, 1, iteration)
             st = self.s0 * np.exp((self.r - self.dv - .5 * self.sigma ** 2) * self.t + self.sigma * self.t ** .5 * zt)
             p = []
@@ -51,16 +51,16 @@ class Option:
                 p.append(max(self.kind * (St - self.k), 0))
             return np.average(p) * np.exp(-self.r * self.t)
         else:
-            return "美式期权不适合这种计算方法"
+            return "美式看跌期权不适合这种计算方法"
 
-    # 二叉数定价
+    # 二叉树定价
     def bt(self, iteration):
         if iteration % 2 != 0:
             iteration += 1
         self.delta = self.t / iteration
         self.u = np.exp(self.sigma * np.sqrt(self.delta))
         self.d = 1 / self.u
-        self.p = (np.exp(self.r * self.delta) - self.d) / (self.u - self.d)
+        self.p = (np.exp((self.r-self.dv) * self.delta) - self.d) / (self.u - self.d)
         self.tree = []
         for j in range(int(iteration / 2) + 1):
             i = j * 2

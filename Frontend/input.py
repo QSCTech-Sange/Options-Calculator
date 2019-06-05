@@ -103,7 +103,7 @@ def input(page):
     label_mc.setFont(page.font_content)
     label_mc.setText("蒙特卡洛迭代次数")
     page.mc = QLineEdit(page.widget)
-    page.mc.setText('1000000')
+    page.mc.setText('100000')
     page.grid.addWidget(label_mc, 7, 0)
     page.grid.addWidget(page.mc, 7, 1)
 
@@ -112,7 +112,7 @@ def input(page):
     label_bt.setFont(page.font_content)
     label_bt.setText("二叉树迭代次数")
     page.bt = QLineEdit(page.widget)
-    page.bt.setText('1000')
+    page.bt.setText('500')
     page.grid.addWidget(label_bt, 7, 2)
     page.grid.addWidget(page.bt, 7, 3)
 

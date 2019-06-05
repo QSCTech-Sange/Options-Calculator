@@ -43,7 +43,15 @@ chmod a+x main.py
 python main.py
 ```
 
-即可
+即可。
+
+
+
+## 项目结构
+
+本项目的结构如下：
+
+
 
 
 

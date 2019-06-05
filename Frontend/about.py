@@ -17,7 +17,8 @@ def about(page):
     label_content.setFont(page.font_content)
     label_content.setText("      杨宇昊 3160105521\n      张天暖 3160103915\n      程   龙 3160104356")
     page.grid.addWidget(label_content, 2, 0, 1, 1)
-
-    # 撑空白
+    # Github页面
     label_empty = QLabel()
+    label_empty.setFont(page.font_content)
+    label_empty.setText("      这是项目的 Github 仓库页面\n      https://github.com/QSCTech-Sange/Options-Calculator")
     page.grid.addWidget(label_empty, 4, 0)
