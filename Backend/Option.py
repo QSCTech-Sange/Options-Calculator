@@ -31,7 +31,7 @@ class Option:
 
     # B-S-M 计算价格方法
     def bsprice(self):
-        if self.european or  self.kind == 1:
+        if self.european or self.kind == 1:
             d_1 = (np.log(self.s0 / self.k) + (
                     self.r - self.dv + .5 * self.sigma ** 2) * self.t) / self.sigma / np.sqrt(
                 self.t)
@@ -43,7 +43,7 @@ class Option:
 
     # 蒙特卡罗定价
     def mcprice(self, iteration):
-        if self.european or  self.kind == 1:
+        if self.european or self.kind == 1:
             zt = np.random.normal(0, 1, iteration)
             st = self.s0 * np.exp((self.r - self.dv - .5 * self.sigma ** 2) * self.t + self.sigma * self.t ** .5 * zt)
             p = []
@@ -60,7 +60,7 @@ class Option:
         self.delta = self.t / iteration
         self.u = np.exp(self.sigma * np.sqrt(self.delta))
         self.d = 1 / self.u
-        self.p = (np.exp((self.r-self.dv) * self.delta) - self.d) / (self.u - self.d)
+        self.p = (np.exp((self.r - self.dv) * self.delta) - self.d) / (self.u - self.d)
         self.tree = []
         for j in range(int(iteration / 2) + 1):
             i = j * 2
