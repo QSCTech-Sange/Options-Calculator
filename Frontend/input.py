@@ -61,7 +61,7 @@ def input(page):
     # 适用的波动率
     label_sigma = QLabel()
     label_sigma.setFont(page.font_content)
-    label_sigma.setText("波动率（%）")
+    label_sigma.setText("一年计波动率（%）")
     page.sigma = QLineEdit(page.widget)
     page.sigma.setText('1')
     page.grid.addWidget(label_sigma, 3, 2 )
@@ -79,7 +79,7 @@ def input(page):
     # 适用的无风险利率
     label_r = QLabel()
     label_r.setFont(page.font_content)
-    label_r.setText("一年单利计无风险利率(%)")
+    label_r.setText("一年计无风险利率(%)")
     page.r = QLineEdit(page.widget)
     page.r.setText('1')
     page.grid.addWidget(label_r, 4, 2)
@@ -88,7 +88,7 @@ def input(page):
     # 股利
     label_dv = QLabel()
     label_dv.setFont(page.font_content)
-    label_dv.setText("一年单利计股息利率(%)")
+    label_dv.setText("一年计股息利率(%)")
     page.dv = QLineEdit(page.widget)
     page.dv.setText('0')
     page.grid.addWidget(label_dv, 5, 0)

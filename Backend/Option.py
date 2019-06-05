@@ -12,7 +12,6 @@ class Option:
     # r 适用的无风险利率
     # sigma 适用的波动率
     # dv 股利信息（本例中使用连续股利率dv）
-    # d1 和 d2 是 BSM 定价过程中需要用到的参数
     def __init__(self, european, kind, s0, k, t, r, sigma, dv):
         self.european = european
         self.kind = kind
@@ -22,12 +21,6 @@ class Option:
         self.sigma = sigma
         self.r = np.log(1 + r)
         self.dv = np.log(1 + dv)
-        # 计算二叉树需要的
-        self.tree = None
-        self.delta = None
-        self.u = None
-        self.d = None
-        self.p = None
 
     # B-S-M 计算价格方法
     def bsprice(self):
@@ -46,10 +39,10 @@ class Option:
         if self.european or self.kind == 1:
             zt = np.random.normal(0, 1, iteration)
             st = self.s0 * np.exp((self.r - self.dv - .5 * self.sigma ** 2) * self.t + self.sigma * self.t ** .5 * zt)
-            p = []
-            for St in st:
-                p.append(max(self.kind * (St - self.k), 0))
-            return np.average(p) * np.exp(-self.r * self.t)
+            all_data = []
+            for i in st:
+                all_data.append(max(self.kind * (i - self.k), 0))
+            return np.average(all_data) * np.exp(-self.r * self.t)
         else:
             return "美式看跌期权不适合这种计算方法"
 
@@ -57,36 +50,36 @@ class Option:
     def bt(self, iteration):
         if iteration % 2 != 0:
             iteration += 1
-        self.delta = self.t / iteration
-        self.u = np.exp(self.sigma * np.sqrt(self.delta))
-        self.d = 1 / self.u
-        self.p = (np.exp((self.r - self.dv) * self.delta) - self.d) / (self.u - self.d)
-        self.tree = []
+        delta = self.t / iteration
+        u = np.exp(self.sigma * np.sqrt(delta))
+        d = 1 / u
+        p = (np.exp((self.r - self.dv) * delta) - d) / (u - d)
+        tree = []
         for j in range(int(iteration / 2) + 1):
             i = j * 2
-            temp = self.s0 * np.power(self.u, iteration - i)
+            temp = self.s0 * np.power(u, iteration - i)
             temp = np.max([(temp - self.k) * self.kind, 0])
-            self.tree.append(temp)
+            tree.append(temp)
         for j in range(1, int(iteration / 2) + 1):
             i = j * 2
-            temp = self.s0 * np.power(self.d, i)
+            temp = self.s0 * np.power(d, i)
             temp = np.max([(temp - self.k) * self.kind, 0])
-            self.tree.append(temp)
+            tree.append(temp)
         for j in range(0, iteration):
-            # 每一层的最高幂次
-            k = iteration - j - 1
             newtree = []
-            for i in (range(len(self.tree) - 1)):
-                temp = self.tree[i] * self.p + (1 - self.p) * self.tree[i + 1]
-                temp = temp * np.exp(-self.r * self.delta)
+            for i in (range(len(tree) - 1)):
+                temp = tree[i] * p + (1 - p) * tree[i + 1]
+                temp = temp * np.exp(-self.r * delta)
                 if not self.european:
+                    # 每一层的最高幂次
+                    k = iteration - j - 1
                     if i < (k + 1) / 2:
                         power = k - i * 2
-                        compare = self.s0 * np.power(self.u, power)
+                        compare = self.s0 * np.power(u, power)
                     else:
                         power = i * 2 - k
-                        compare = self.s0 * np.power(self.d, power)
+                        compare = self.s0 * np.power(d, power)
                     temp = np.max([temp, (compare - self.k) * self.kind])
                 newtree.append(temp)
-            self.tree = newtree
-        return self.tree[0]
+            tree = newtree
+        return tree[0]
