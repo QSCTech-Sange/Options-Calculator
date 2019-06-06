@@ -209,17 +209,18 @@ $$
 $$
 st = s0 * e^{(r-dv-0.5*\sigma^2)*t + \sigma *t ^{0.05}*zt}
 $$
-来计算最终价值，这里根据迭代次数生成了迭代次数个最终价值。我们计算这些最终价值的平均值，再贴现到当前日期。贴现是指原价值乘以e^(-r*t)
+来计算最终价值，这里根据迭代次数生成了迭代次数个最终价值。这些最终价值要根据看涨或看跌进行 k- x 或者 x-k 的处理，并取处理后和0相比的较大值。
+
+我们计算这些最终价值的平均值，再贴现到当前日期。贴现是指原价值乘以e^(-r*t)
 
 ```python
+# 蒙特卡罗定价
 def mcprice(self, iteration):
     if self.european or self.kind == 1:
         zt = np.random.normal(0, 1, iteration)
         st = self.s0 * np.exp((self.r - self.dv - .5 * self.sigma ** 2) * self.t + self.sigma * self.t ** .5 * zt)
-        p = []
-        for i in st:
-            p.append(max(self.kind * (i - self.k), 0))
-        return np.average(p) * np.exp(-self.r * self.t)
+        st = np.maximum(self.kind * (st - self.k), 0)
+        return np.average(st) * np.exp(-self.r * self.t)
     else:
         return "美式看跌期权不适合这种计算方法"
 ```

@@ -39,10 +39,8 @@ class Option:
         if self.european or self.kind == 1:
             zt = np.random.normal(0, 1, iteration)
             st = self.s0 * np.exp((self.r - self.dv - .5 * self.sigma ** 2) * self.t + self.sigma * self.t ** .5 * zt)
-            all_data = []
-            for i in st:
-                all_data.append(max(self.kind * (i - self.k), 0))
-            return np.average(all_data) * np.exp(-self.r * self.t)
+            st = np.maximum(self.kind * (st - self.k), 0)
+            return np.average(st) * np.exp(-self.r * self.t)
         else:
             return "美式看跌期权不适合这种计算方法"
 
