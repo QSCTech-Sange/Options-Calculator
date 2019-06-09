@@ -6,10 +6,11 @@
 
 1. 支持非常全面的期权类型
 2. 美观优雅简洁大方的界面
+3. 可以直接提取使用其中的 `Option` 类来应用于你所需要的计算期权价格的地方。
 4. 可以指定具体日期而不用再手动算时间间隔
 5. 可以直接输入一年计无风险利率而不用用户计算连续复利
 
-> 以上两点直接将 Options Calculator 从普通的学术研究计算器拉到了普世的，实用的价值层面。广度层面的延伸
+> 以上两点直接将 Options Calculator 从普通的学术研究计算器拉到了普世的，实用的价值层面。广度层面的延伸。
 
 5. 可以比较观察不同方法的计算结果差异
 6. 可以手动指定二叉树方法和蒙特卡罗方法的迭代次数，更好地理解期权定价。
@@ -50,10 +51,10 @@
 
 项目依赖于 `Python3`以及下列Python包：`numpy`,`pyqt5`,`qtawesome` 和 `scipy`。
 
-安装完 python 后可通过以下指令按照缺少的包。
+安装完 python 后可进入项目目录通过以下指令安装缺少的包。
 
 ```shell
-pip install numpy pyqt5 qtawesome scipy
+pip install requirements.txt
 ```
 
 
@@ -104,11 +105,12 @@ python main.py
 │   ├── quit.png
 │   ├── result.png
 │   └── welcome.png
-└── README.md
+├── README.md
+└── requirements.txt
 
 ```
 
-项目分为前端和后端，前端在` Frontend` 文件夹里，后端在 `Backend` 文件夹里。`README.md` 即本文件。根目录下img 里的文件只是为了本文档的渲染而已，忽略即可。
+项目分为前端和后端，前端在` Frontend` 文件夹里，后端在 `Backend` 文件夹里。`README.md` 即本文件。根目录下 `img` 里的文件只是为了本文档的渲染而已，忽略即可。 `requirements.txt` 记录了项目的依赖。
 
 ### 后端
 
