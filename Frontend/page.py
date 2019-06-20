@@ -63,10 +63,12 @@ class page:
             k = float(self.k.text())
             sigma = float(self.sigma.text())/100
             r = float(self.r.text())/100
+            r = np.log(1 + r)
             t1 = self.date_edit_t1.date()
             t0 = self.date_edit_t0.date()
-            t = t0.daysTo(t1) / 365
+            t = t0.daysTo(t1)
             dv = float(self.dv.text())/100
+            dv = np.log(1 + dv)
             mcstep = int(self.mc.text())
             btstep = int(self.bt.text())
             option = Option(european, kind, s0, k, t, r, sigma, dv)

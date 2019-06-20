@@ -8,19 +8,19 @@ class Option:
     # kind 看涨或看跌（Put 为 -1 , Call 为 1）
     # s0 标的资产现价
     # k 期权执行价
-    # t 期权到期时间 - 现在时间
-    # r 适用的无风险利率
-    # sigma 适用的波动率
-    # dv 股利信息（本例中使用连续股利率dv）
+    # t 期权到期时间 - 现在时间,以天计
+    # r 适用的无风险利率，连续复利
+    # sigma 适用的波动率，
+    # dv 股利信息，连续复利
     def __init__(self, european, kind, s0, k, t, r, sigma, dv):
         self.european = european
         self.kind = kind
         self.s0 = s0
         self.k = k
-        self.t = t
+        self.t = t /365
         self.sigma = sigma
-        self.r = np.log(1 + r)
-        self.dv = np.log(1 + dv)
+        self.r = r
+        self.dv = dv
 
     # B-S-M 计算价格方法
     def bsprice(self):
