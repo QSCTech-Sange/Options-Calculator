@@ -4,6 +4,7 @@ sys.path.append("..")
 from PyQt5.QtWidgets import (QWidget, QMessageBox, QGridLayout)
 from PyQt5.QtGui import QFont
 from Backend.Option import Option
+import numpy as np
 
 class page:
     def __init__(self, grid, mw):
