@@ -21,28 +21,31 @@ class Option:
         self.sigma = sigma
         self.r = r
         self.dv = dv
+        self.bsprice = None
+        self.mcprice = None
+        self.btprice = None
 
     # B-S-M 计算价格方法
-    def bsprice(self):
+    def bs(self):
         if self.european or self.kind == 1:
             d_1 = (np.log(self.s0 / self.k) + (
                     self.r - self.dv + .5 * self.sigma ** 2) * self.t) / self.sigma / np.sqrt(
                 self.t)
             d_2 = d_1 - self.sigma * np.sqrt(self.t)
-            return self.kind * self.s0 * np.exp(-self.dv * self.t) * sps.norm.cdf(
+            self.bsprice = self.kind * self.s0 * np.exp(-self.dv * self.t) * sps.norm.cdf(
                 self.kind * d_1) - self.kind * self.k * np.exp(-self.r * self.t) * sps.norm.cdf(self.kind * d_2)
         else:
-            return "美式看跌期权不适合这种计算方法"
+            self.bsprice = "美式看跌期权不适合这种计算方法"
 
     # 蒙特卡罗定价
-    def mcprice(self, iteration):
+    def mc(self, iteration):
         if self.european or self.kind == 1:
             zt = np.random.normal(0, 1, iteration)
             st = self.s0 * np.exp((self.r - self.dv - .5 * self.sigma ** 2) * self.t + self.sigma * self.t ** .5 * zt)
             st = np.maximum(self.kind * (st - self.k), 0)
-            return np.average(st) * np.exp(-self.r * self.t)
+            self.mcprice = np.average(st) * np.exp(-self.r * self.t)
         else:
-            return "美式看跌期权不适合这种计算方法"
+            self.mcprice = "美式看跌期权不适合这种计算方法"
 
     # 二叉树定价
     def bt(self, iteration):
@@ -80,4 +83,4 @@ class Option:
                     temp = np.max([temp, (compare - self.k) * self.kind])
                 newtree.append(temp)
             tree = newtree
-        return tree[0]
+        self.btprice = tree[0]
