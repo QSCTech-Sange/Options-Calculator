@@ -1,3 +1,5 @@
+> 更多精彩内容请访问[我的博客](https://qsctech-sange.github.io)，一起来康康吧！
+
 # Options Calculator
 
 这是一个全能的期权计算器，涵盖 BS法，蒙特卡洛法，二叉数法，能够对看涨期权，看跌期权，欧式期权，美式期权，有股利期权，无股利期权进行定价，并附带GUI客户端。
@@ -6,14 +8,15 @@
 
 1. 支持非常全面的期权类型
 2. 美观优雅简洁大方的界面
-3. 可以直接提取使用其中的 `Option` 类来应用于你所需要的计算期权价格的地方。
-4. 可以指定具体日期而不用再手动算时间间隔
-5. 可以直接输入一年计无风险利率而不用用户计算连续复利
+3. 采用了多线程的方式来优化用户体验
+4. 可以直接提取使用其中的 `Option` 类来应用于你所需要的计算期权价格的地方
+5. 可以指定具体日期而不用再手动算时间间隔
+6. 可以直接输入一年计无风险利率而不用用户计算连续复利
 
 > 以上两点直接将 Options Calculator 从普通的学术研究计算器拉到了普世的，实用的价值层面。广度层面的延伸。
 
-5. 可以比较观察不同方法的计算结果差异
-6. 可以手动指定二叉树方法和蒙特卡罗方法的迭代次数，更好地理解期权定价。
+7. 可以比较观察不同方法的计算结果差异
+8. 可以手动指定二叉树方法和蒙特卡罗方法的迭代次数，更好地理解期权定价。
 
 > 以上两点深化了 Options Calculator 的学术研究价值意义。深度层面的加强。
 
@@ -130,14 +133,14 @@ python main.py
 
 ### Option 类
 
-`european` 为是否是欧式期权 (False 为欧式期权)
-`kind` 看涨或看跌（`Put` 为 -1 ,` Call` 为 1）
-`s0` 标的资产现价
-`k` 期权执行价
-`t` 期权到期时间 - 现在时间
-`r` 适用的无风险利率
-`sigma` 适用的波动率
-`dv` 股利利率
++ `european` 为是否是欧式期权 (False 为欧式期权)
++ `kind` 看涨或看跌（`Put` 为 -1 ,` Call` 为 1）
++ `s0` 标的资产现价
++ `k` 期权执行价
++ `t` 期权到期时间 - 现在时间
++ `r` 适用的无风险利率
++ `sigma` 适用的波动率
++ `dv` 股利利率
 
 ```python
 class Option:
@@ -147,10 +150,13 @@ class Option:
         self.kind = kind
         self.s0 = s0
         self.k = k
-        self.t = t
+        self.t = t /365
         self.sigma = sigma
-        self.r = np.log(1 + r)
-        self.dv = np.log(1 + dv)
+        self.r = r
+        self.dv = dv
+        self.bsprice = None
+        self.mcprice = None
+        self.btprice = None
 ```
 
 这里认为传递给期权的构造函数的无风险利率和股利利率都是一年计利率，我们在构造时将其计算为连续复利。
@@ -160,16 +166,16 @@ class Option:
 因为涉及到了股利利率，所以严格来说不是BS算法而是BSM算法。
 
 ```python
-def bsprice(self):
-    if self.european or self.kind == 1:
-        d_1 = (np.log(self.s0 / self.k) + (
-            self.r - self.dv + .5 * self.sigma ** 2) * self.t) / self.sigma / np.sqrt(
-            self.t)
-        d_2 = d_1 - self.sigma * np.sqrt(self.t)
-        return self.kind * self.s0 * np.exp(-self.dv * self.t) * sps.norm.cdf(
-            self.kind * d_1) - self.kind * self.k * np.exp(-self.r * self.t) * sps.norm.cdf(self.kind * d_2)
-    else:
-        return "美式看跌期权不适合这种计算方法"
+    def bs(self):
+        if self.european or self.kind == 1:
+            d_1 = (np.log(self.s0 / self.k) + (
+                    self.r - self.dv + .5 * self.sigma ** 2) * self.t) / self.sigma / np.sqrt(
+                self.t)
+            d_2 = d_1 - self.sigma * np.sqrt(self.t)
+            self.bsprice = self.kind * self.s0 * np.exp(-self.dv * self.t) * sps.norm.cdf(
+                self.kind * d_1) - self.kind * self.k * np.exp(-self.r * self.t) * sps.norm.cdf(self.kind * d_2)
+        else:
+            self.bsprice = "美式看跌期权不适合这种计算方法"
 ```
 
 BSM 算法本身只能用于**欧式期权**，由于美式看涨期权和欧式看涨期权价格相等，因此我们将扩展到仅仅是**不能计算美式看跌期权**。
@@ -216,15 +222,15 @@ $$
 我们计算这些最终价值的平均值，再贴现到当前日期。贴现是指原价值乘以e^(-r*t)
 
 ```python
-# 蒙特卡罗定价
-def mcprice(self, iteration):
-    if self.european or self.kind == 1:
-        zt = np.random.normal(0, 1, iteration)
-        st = self.s0 * np.exp((self.r - self.dv - .5 * self.sigma ** 2) * self.t + self.sigma * self.t ** .5 * zt)
-        st = np.maximum(self.kind * (st - self.k), 0)
-        return np.average(st) * np.exp(-self.r * self.t)
-    else:
-        return "美式看跌期权不适合这种计算方法"
+    # 蒙特卡罗定价
+    def mc(self, iteration):
+        if self.european or self.kind == 1:
+            zt = np.random.normal(0, 1, iteration)
+            st = self.s0 * np.exp((self.r - self.dv - .5 * self.sigma ** 2) * self.t + self.sigma * self.t ** .5 * zt)
+            st = np.maximum(self.kind * (st - self.k), 0)
+            self.mcprice = np.average(st) * np.exp(-self.r * self.t)
+        else:
+            self.mcprice = "美式看跌期权不适合这种计算方法"
 ```
 
 
@@ -258,44 +264,41 @@ p *(500的节点的期权价值) * (1-p) *(499的节点的期权价值)  × 无�
 这样一层层往前推，就推导到了我们的根节点，就是站在此时此刻的期权价值。
 
 ```python
-# 二叉树定价
-def bt(self, iteration):
-    if iteration % 2 != 0:
-        iteration += 1
-    delta = self.t / iteration
-    u = np.exp(self.sigma * np.sqrt(delta))
-    d = 1 / u
-    p = (np.exp((self.r - self.dv) * delta) - d) / (u - d)
-    tree = []
-    # 计算树的叶子结点
-    for j in range(int(iteration / 2) + 1):
-        i = j * 2
-        temp = self.s0 * np.power(u, iteration - i)
-        temp = np.max([(temp - self.k) * self.kind, 0])
-        tree.append(temp)
-    for j in range(1, int(iteration / 2) + 1):
-        i = j * 2
-        temp = self.s0 * np.power(d, i)
-        temp = np.max([(temp - self.k) * self.kind, 0])
-        tree.append(temp)
-    # 每一次循环往前推一层，直到最上层
-    for j in range(0, iteration):
-        newtree = []
-        for i in (range(len(tree) - 1)):
-            temp = tree[i] * p + (1 - p) * tree[i + 1]
-            temp = temp * np.exp(-self.r * delta)
-            if not self.european:
-                # k 是每一层的最高幂次
-                k = iteration - j - 1
-                if i < (k + 1) / 2:
-                    power = k - i * 2
-                    compare = self.s0 * np.power(u, power)
-                else:
-                    power = i * 2 - k
-                    compare = self.s0 * np.power(d, power)
-                temp = np.max([temp, (compare - self.k) * self.kind])
-            newtree.append(temp)
-        tree = newtree
-    return tree[0]
+    def bt(self, iteration):
+        if iteration % 2 != 0:
+            iteration += 1
+        delta = self.t / iteration
+        u = np.exp(self.sigma * np.sqrt(delta))
+        d = 1 / u
+        p = (np.exp((self.r - self.dv) * delta) - d) / (u - d)
+        tree = []
+        for j in range(int(iteration / 2) + 1):
+            i = j * 2
+            temp = self.s0 * np.power(u, iteration - i)
+            temp = np.max([(temp - self.k) * self.kind, 0])
+            tree.append(temp)
+        for j in range(1, int(iteration / 2) + 1):
+            i = j * 2
+            temp = self.s0 * np.power(d, i)
+            temp = np.max([(temp - self.k) * self.kind, 0])
+            tree.append(temp)
+        for j in range(0, iteration):
+            newtree = []
+            for i in (range(len(tree) - 1)):
+                temp = tree[i] * p + (1 - p) * tree[i + 1]
+                temp = temp * np.exp(-self.r * delta)
+                if not self.european:
+                    # 每一层的最高幂次
+                    k = iteration - j - 1
+                    if i < (k + 1) / 2:
+                        power = k - i * 2
+                        compare = self.s0 * np.power(u, power)
+                    else:
+                        power = i * 2 - k
+                        compare = self.s0 * np.power(d, power)
+                    temp = np.max([temp, (compare - self.k) * self.kind])
+                newtree.append(temp)
+            tree = newtree
+        self.btprice = tree[0]
 ```
 
