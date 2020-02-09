@@ -49,38 +49,29 @@ class Option:
 
     # 二叉树定价
     def bt(self, iteration):
-        if iteration % 2 != 0:
-            iteration += 1
         delta = self.t / iteration
         u = np.exp(self.sigma * np.sqrt(delta))
         d = 1 / u
         p = (np.exp((self.r - self.dv) * delta) - d) / (u - d)
-        tree = []
-        for j in range(int(iteration / 2) + 1):
-            i = j * 2
-            temp = self.s0 * np.power(u, iteration - i)
-            temp = np.max([(temp - self.k) * self.kind, 0])
-            tree.append(temp)
-        for j in range(1, int(iteration / 2) + 1):
-            i = j * 2
-            temp = self.s0 * np.power(d, i)
-            temp = np.max([(temp - self.k) * self.kind, 0])
-            tree.append(temp)
-        for j in range(0, iteration):
-            newtree = []
-            for i in (range(len(tree) - 1)):
-                temp = tree[i] * p + (1 - p) * tree[i + 1]
-                temp = temp * np.exp(-self.r * delta)
-                if not self.european:
-                    # 每一层的最高幂次
-                    k = iteration - j - 1
-                    if i < (k + 1) / 2:
-                        power = k - i * 2
-                        compare = self.s0 * np.power(u, power)
-                    else:
-                        power = i * 2 - k
-                        compare = self.s0 * np.power(d, power)
-                    temp = np.max([temp, (compare - self.k) * self.kind])
-                newtree.append(temp)
+        
+        tree = np.arange(0,iteration * 2 + 2,2,dtype=np.float128)
+        tree[iteration//2 + 1:] = tree[:(iteration+1)//2][::-1]
+        np.multiply(tree,-1,out=tree)
+        np.add(tree,iteration,out=tree)
+        np.power(u,tree[:iteration//2],out=tree[:iteration//2])
+        np.power(d,tree[iteration//2:],out=tree[iteration//2:])
+        np.maximum((self.s0 * tree - self.k) * self.kind,0,out=tree)
+
+        for j in range(iteration):
+            newtree = tree[:-1] * p + tree[1:] * (1 - p)
+            newtree = newtree * np.exp(-self.r * delta)
+            if not self.european:
+                compare = np.abs(iteration - j - 1 - np.arange(tree.size - 1) * 2).astype(np.float128)
+                np.power(u,compare[:len(compare)//2],out=compare[:len(compare)//2])
+                np.power(d,compare[len(compare)//2:],out=compare[len(compare)//2:])
+                np.multiply(self.s0,compare,out=compare)
+                np.subtract(compare,self.k,out=compare)
+                np.multiply(compare,self.kind,out=compare)
+                np.maximum(newtree, compare,out=newtree)
             tree = newtree
         self.btprice = tree[0]
